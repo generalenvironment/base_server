@@ -1,0 +1,5 @@
+.env
+.tmp.driveupload/
+cf_deploy.json
+cf_*.json
+.hermes/
