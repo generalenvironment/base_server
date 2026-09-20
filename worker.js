@@ -1,18 +1,13 @@
 /* Инфо о сборке — обновляется скриптом scripts/bake_build_info.py перед пушем */
-const BUILD_TIME = "2026-09-19 17:58 UTC";
-const BUILD_VERSION = "0.1.0";
-const BUILD_NUMBER = 3;
+const BUILD_TIME = "2026-09-20 18:43 UTC";
+const BUILD_VERSION = "0.2.0";
+const BUILD_NUMBER = 5;
 
 const SVG = `<svg viewBox="0 0 341 66" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M181.499 21.9978H236.5C239.538 21.9978 241.999 24.4593 241.999 27.4973C241.999 30.5353 244.461 32.9967 247.499 32.9967H250.716C252.173 32.9967 253.575 32.4139 254.604 31.3847L262.385 23.6037C263.42 22.5683 263.997 21.1732 263.997 19.7162V16.4984C263.997 13.4604 261.535 10.999 258.497 10.999H181.499C178.461 10.999 176 13.4604 176 16.4984C176 19.5364 178.461 21.9978 181.499 21.9978Z" fill="white"/>
 <path d="M335.5 44.001H332.282C330.825 44.001 329.424 44.5838 328.395 45.613L320.614 53.394C319.579 54.4294 319.002 55.8244 319.002 57.2814V60.4992C319.002 63.5372 321.463 65.9986 324.501 65.9986H335.5C338.538 65.9986 341 63.5372 341 60.4992V49.5004C341 46.4624 338.538 44.001 335.5 44.001Z" fill="white"/>
 <path d="M5.49941 21.9977H8.71722C10.1742 21.9977 11.5754 21.4149 12.6046 20.3856L20.3856 12.6046C21.4211 11.5692 21.9977 10.1742 21.9977 8.71722V5.49941C21.9977 2.46141 19.5362 0 16.4982 0H5.49941C2.46141 0 0 2.46141 0 5.49941V16.4982C0 19.5362 2.46141 21.9977 5.49941 21.9977Z" fill="white"/>
 <path d="M335.501 10.999H321.279C319.822 10.999 318.42 11.5818 317.391 12.611L287.612 42.3897C286.577 43.4251 285.182 44.0017 283.725 44.0017H189.28C187.823 44.0017 186.422 43.4189 185.393 42.3897L166.613 23.6099C165.578 22.5745 165.001 21.1794 165.001 19.7224V16.5046C165.001 13.4666 162.54 11.0052 159.502 11.0052H35.2781C33.8211 11.0052 32.4199 11.588 31.3907 12.6172L1.612 42.3897C0.576601 43.4251 0 44.8201 0 46.2771V60.4999C0 63.5379 2.46141 65.9994 5.49941 65.9994H8.71722C10.1742 65.9994 11.5754 65.4165 12.6046 64.3873L42.3833 34.6087C43.4187 33.5733 44.8137 32.9967 46.2707 32.9967H85.7152C87.1722 32.9967 88.5734 32.4139 89.6026 31.3847L97.3836 23.6037C98.419 22.5683 99.814 21.9916 101.271 21.9916H137.492C140.53 21.9916 142.991 24.4531 142.991 27.4911V30.7089C142.991 32.1659 142.408 33.5671 141.379 34.5963L133.598 42.3773C132.562 43.4127 131.168 43.9893 129.711 43.9893H101.265C99.8078 43.9893 98.4066 44.5721 97.3774 45.6013L89.5964 53.3823C88.561 54.4177 87.166 54.9943 85.709 54.9943H68.2622C66.8052 54.9943 65.404 55.5771 64.3747 56.6063C60.9089 60.0721 63.3641 65.9932 68.2622 65.9932H151.708C153.165 65.9932 154.566 65.4103 155.596 64.3811L161.095 58.8817C163.24 56.7365 166.725 56.7365 168.876 58.8817L174.375 64.3811C175.411 65.4165 176.806 65.9932 178.263 65.9932H294.705C296.162 65.9932 297.564 65.4103 298.593 64.3811L339.37 23.6037C340.406 22.5683 340.982 21.1732 340.982 19.7162V16.4984C340.982 13.4604 338.521 10.999 335.483 10.999H335.501Z" fill="white"/>
-</svg>`;
-
-const BTN = `<svg viewBox="0 0 30.3086 36.9943" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="30.3086" height="36.9943" fill="#3B2824" fill-opacity="0.01"/>
-<path d="M15.1568 21.8436L10.699 26.3014V19.6147L15.1568 15.1568L19.6147 10.699V17.3857L15.1568 21.8436Z" fill="white"/>
 </svg>`;
 
 export default {
@@ -42,17 +37,20 @@ export default {
       filter: drop-shadow(0 0 22px rgba(255,255,255,.14));
     }
     .logo svg { width: 100%; height: auto; display: block; }
-    .buttons { display: flex; align-items: center; gap: 26px; }
+    .buttons { display: flex; align-items: center; gap: clamp(28px, 4.2vw, 80px); }
     .btn {
-      width: min(30.31px, 5vw); flex: none;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: clamp(14px, 1.35vw, 19px);
+      font-weight: 400; color: #fff; letter-spacing: .03em;
+      text-decoration: none;
       background: none; border: 0; padding: 0; cursor: pointer;
-      transition: transform var(--press-t) var(--press-ease),
+      transition: opacity var(--press-t) var(--press-ease),
+                  transform var(--press-t) var(--press-ease),
                   filter var(--press-t) var(--press-ease);
       filter: drop-shadow(0 0 6px rgba(255,255,255,.05));
     }
-    .btn svg { width: 100%; height: auto; display: block; }
-    .btn:hover { transform: translateY(-2px); filter: drop-shadow(0 0 12px rgba(255,255,255,.28)); }
-    .btn.pressed { transform: translateY(1.5px) scale(.94); }
+    .btn:hover { opacity: .65; transform: translateY(-2px); filter: drop-shadow(0 0 12px rgba(255,255,255,.28)); }
+    .btn.pressed { opacity: .5; transform: translateY(1.5px) scale(.94); }
     @media (max-width: 760px) {
       .ui { grid-template-columns: 1fr; justify-items: center; align-content: center; row-gap: 56px; padding: 24px; }
       .logo { width: min(341px, 82vw); }
@@ -78,10 +76,10 @@ export default {
 <main class="ui">
   <div class="scene"><div class="logo" id="logo">${SVG}</div></div>
   <div class="buttons">
-    <button class="btn" type="button" aria-label="button 1">${BTN}</button>
-    <button class="btn" type="button" aria-label="button 2">${BTN}</button>
-    <button class="btn" type="button" aria-label="button 3">${BTN}</button>
-    <button class="btn" type="button" aria-label="button 4">${BTN}</button>
+    <a class="btn" href="#" aria-label="Spotify">Spotify</a>
+    <a class="btn" href="https://t.me/designbygod" target="_blank" rel="noopener" aria-label="Telegram">Telegram</a>
+    <a class="btn" href="#" aria-label="YouTube">YouTube</a>
+    <a class="btn" href="#" aria-label="Shop">Shop</a>
   </div>
 </main>
 <div class="sound-hint" id="hint">звук включится после первого клика</div>
@@ -186,7 +184,7 @@ export default {
 
   /* ============ Аудио (AudioContext: низкая задержка hover) ============ */
   var FILES = {
-    ambient: '/audio/ambient_web.mp3',
+    ambient: '/audio/ambient_catechism.mp3',
     body:    '/audio/mouse_layer_body_mono.mp3',
     hover0:  '/audio/mouse_hoover_01.mp3',
     hover1:  '/audio/mouse_hoover_02.mp3',
