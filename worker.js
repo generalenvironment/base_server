@@ -1,7 +1,7 @@
 /* Инфо о сборке — обновляется скриптом scripts/bake_build_info.py перед пушем */
-const BUILD_TIME = "2026-09-20 19:03 UTC";
+const BUILD_TIME = "2026-09-20 19:07 UTC";
 const BUILD_VERSION = "0.2.0";
-const BUILD_NUMBER = 6;
+const BUILD_NUMBER = 7;
 const SFX_PACK = "CATECHISM";
 
 const SVG = `<svg viewBox="0 0 341 66" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -29,13 +29,6 @@ export default {
       grid-template-columns: repeat(10, 1fr);
       grid-template-rows: repeat(5, 1fr);
     }
-    .sidebar {
-      grid-column: 1; grid-row: 1 / 6;
-      display: grid; grid-template-rows: repeat(5, 1fr);
-      border-right: 1px solid rgba(255,255,255,.08);
-    }
-    .sidebar i { display: block; border-bottom: 1px solid rgba(255,255,255,.08); }
-    .sidebar i:last-child { border-bottom: 0; }
     .meta {
       grid-column: 2 / 5; grid-row: 2;
       display: grid; grid-template-columns: repeat(3, 1fr);
@@ -59,8 +52,8 @@ export default {
     .logo svg { width: 100%; height: auto; display: block; }
     .buttons {
       grid-column: 8 / 10; grid-row: 3;
-      display: grid; grid-template-columns: 1fr 1fr;
-      align-items: center; gap: clamp(16px, 2vw, 40px) clamp(20px, 2.6vw, 52px);
+      display: flex; align-items: center;
+      gap: clamp(20px, 2.6vw, 52px);
     }
     .btn {
       font-family: "Segoe UI", system-ui, sans-serif;
@@ -77,11 +70,10 @@ export default {
     .btn.pressed { opacity: .5; transform: translateY(1.5px) scale(.94); }
     @media (max-width: 760px) {
       .ui { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; padding: 20px; }
-      .sidebar { display: none; }
       .meta { grid-column: 1; grid-row: 1; grid-template-columns: repeat(3, 1fr); }
       .scene { grid-column: 1; grid-row: 2; }
       .logo { width: min(341px, 82vw); }
-      .buttons { grid-column: 1; grid-row: 3; grid-template-columns: 1fr 1fr; }
+      .buttons { grid-column: 1; grid-row: 3; flex-wrap: wrap; justify-content: center; }
     }
     :root { --press-t: .18s; --press-ease: cubic-bezier(.22, .61, .36, 1); }
     .sound-hint {
@@ -102,7 +94,6 @@ export default {
 </head>
 <body>
 <main class="ui">
-  <aside class="sidebar"><i></i><i></i><i></i><i></i><i></i></aside>
   <div class="meta">
     <span>ВЕРСИЯ ${BUILD_VERSION}</span>
     <span>БИЛД № ${BUILD_NUMBER}</span>
