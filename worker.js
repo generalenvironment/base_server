@@ -1,7 +1,8 @@
 /* Инфо о сборке — обновляется скриптом scripts/bake_build_info.py перед пушем */
-const BUILD_TIME = "2026-09-20 18:43 UTC";
+const BUILD_TIME = "2026-09-20 19:03 UTC";
 const BUILD_VERSION = "0.2.0";
-const BUILD_NUMBER = 5;
+const BUILD_NUMBER = 6;
+const SFX_PACK = "CATECHISM";
 
 const SVG = `<svg viewBox="0 0 341 66" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M181.499 21.9978H236.5C239.538 21.9978 241.999 24.4593 241.999 27.4973C241.999 30.5353 244.461 32.9967 247.499 32.9967H250.716C252.173 32.9967 253.575 32.4139 254.604 31.3847L262.385 23.6037C263.42 22.5683 263.997 21.1732 263.997 19.7162V16.4984C263.997 13.4604 261.535 10.999 258.497 10.999H181.499C178.461 10.999 176 13.4604 176 16.4984C176 19.5364 178.461 21.9978 181.499 21.9978Z" fill="white"/>
@@ -24,25 +25,48 @@ export default {
     body { min-height: 100vh; background: #000; overflow: hidden; }
     .ui {
       position: fixed; inset: 0;
-      display: grid; grid-template-columns: 341fr 199.234fr;
-      align-items: center; column-gap: clamp(80px, 34.7vw, 671px);
-      padding: 0 clamp(28px, 11.83vw, 227px);
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(5, 1fr);
     }
-    .scene { perspective: 1300px; }
+    .sidebar {
+      grid-column: 1; grid-row: 1 / 6;
+      display: grid; grid-template-rows: repeat(5, 1fr);
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+    .sidebar i { display: block; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .sidebar i:last-child { border-bottom: 0; }
+    .meta {
+      grid-column: 2 / 5; grid-row: 2;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      align-items: start; gap: 8px;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: clamp(9px, .72vw, 12px);
+      color: #4a4a4a; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .scene {
+      grid-column: 2 / 5; grid-row: 3;
+      perspective: 1300px;
+      display: flex; align-items: center; justify-content: center;
+    }
     .logo {
-      width: min(341px, 80vw); height: auto;
+      width: min(341px, 30vw); height: auto;
       transform-style: preserve-3d;
       transform-origin: 50% 50%;
       will-change: transform;
       filter: drop-shadow(0 0 22px rgba(255,255,255,.14));
     }
     .logo svg { width: 100%; height: auto; display: block; }
-    .buttons { display: flex; align-items: center; gap: clamp(28px, 4.2vw, 80px); }
+    .buttons {
+      grid-column: 8 / 10; grid-row: 3;
+      display: grid; grid-template-columns: 1fr 1fr;
+      align-items: center; gap: clamp(16px, 2vw, 40px) clamp(20px, 2.6vw, 52px);
+    }
     .btn {
       font-family: "Segoe UI", system-ui, sans-serif;
       font-size: clamp(14px, 1.35vw, 19px);
       font-weight: 400; color: #fff; letter-spacing: .03em;
-      text-decoration: none;
+      text-decoration: none; white-space: nowrap;
       background: none; border: 0; padding: 0; cursor: pointer;
       transition: opacity var(--press-t) var(--press-ease),
                   transform var(--press-t) var(--press-ease),
@@ -52,8 +76,12 @@ export default {
     .btn:hover { opacity: .65; transform: translateY(-2px); filter: drop-shadow(0 0 12px rgba(255,255,255,.28)); }
     .btn.pressed { opacity: .5; transform: translateY(1.5px) scale(.94); }
     @media (max-width: 760px) {
-      .ui { grid-template-columns: 1fr; justify-items: center; align-content: center; row-gap: 56px; padding: 24px; }
+      .ui { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; padding: 20px; }
+      .sidebar { display: none; }
+      .meta { grid-column: 1; grid-row: 1; grid-template-columns: repeat(3, 1fr); }
+      .scene { grid-column: 1; grid-row: 2; }
       .logo { width: min(341px, 82vw); }
+      .buttons { grid-column: 1; grid-row: 3; grid-template-columns: 1fr 1fr; }
     }
     :root { --press-t: .18s; --press-ease: cubic-bezier(.22, .61, .36, 1); }
     .sound-hint {
@@ -74,6 +102,12 @@ export default {
 </head>
 <body>
 <main class="ui">
+  <aside class="sidebar"><i></i><i></i><i></i><i></i><i></i></aside>
+  <div class="meta">
+    <span>ВЕРСИЯ ${BUILD_VERSION}</span>
+    <span>БИЛД № ${BUILD_NUMBER}</span>
+    <span>UI / UX SFX: ${SFX_PACK}</span>
+  </div>
   <div class="scene"><div class="logo" id="logo">${SVG}</div></div>
   <div class="buttons">
     <a class="btn" href="#" aria-label="Spotify">Spotify</a>
