@@ -1,8 +1,7 @@
 /* Инфо о сборке — обновляется скриптом scripts/bake_build_info.py перед пушем */
-const BUILD_TIME = "2026-09-20 20:13 UTC";
+const BUILD_TIME = "2026-09-20 20:25 UTC";
 const BUILD_VERSION = "0.2.0";
-const BUILD_NUMBER = 9;
-const SFX_PACK = "CATECHISM";
+const BUILD_NUMBER = 10;
 
 const SVG = `<svg viewBox="0 0 341 66" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M181.499 21.9978H236.5C239.538 21.9978 241.999 24.4593 241.999 27.4973C241.999 30.5353 244.461 32.9967 247.499 32.9967H250.716C252.173 32.9967 253.575 32.4139 254.604 31.3847L262.385 23.6037C263.42 22.5683 263.997 21.1732 263.997 19.7162V16.4984C263.997 13.4604 261.535 10.999 258.497 10.999H181.499C178.461 10.999 176 13.4604 176 16.4984C176 19.5364 178.461 21.9978 181.499 21.9978Z" fill="white"/>
@@ -13,6 +12,17 @@ const SVG = `<svg viewBox="0 0 341 66" fill="none" xmlns="http://www.w3.org/2000
 
 export default {
   async fetch(request) {
+    // реальный статус: MCP проверяем server-side (этот воркер отвечает => Active)
+    let mcpReady = false;
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 2500);
+      const r = await fetch('https://mcp.worldwidemultivision.com/', { signal: ctrl.signal });
+      mcpReady = r.ok;
+      clearTimeout(t);
+    } catch (e) { mcpReady = false; }
+    const serverStatus = 'Server: Active' + (mcpReady ? ' · MCP ready' : ' · MCP offline');
+
     const html = `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -52,6 +62,7 @@ export default {
       font-size: clamp(9px, .72vw, 12px);
       color: #4a4a4a; letter-spacing: .08em; text-transform: uppercase;
     }
+    .meta span { white-space: nowrap; }
     .scene {
       grid-column: 2 / 5; grid-row: 3;
       perspective: 1300px;
@@ -113,8 +124,8 @@ export default {
 <main class="ui">
   <div class="meta">
     <span>ВЕРСИЯ ${BUILD_VERSION}</span>
-    <span>БИЛД № ${BUILD_NUMBER}</span>
-    <span>UI / UX SFX: ${SFX_PACK}</span>
+    <span>${serverStatus}</span>
+    <span>Designed by Semenov Innokentii (C) MMXXVI</span>
   </div>
   <div class="scene"><div class="logo" id="logo">${SVG}</div></div>
   <div class="buttons">
