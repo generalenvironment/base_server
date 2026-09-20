@@ -1,7 +1,7 @@
 /* Инфо о сборке — обновляется скриптом scripts/bake_build_info.py перед пушем */
-const BUILD_TIME = "2026-09-20 19:07 UTC";
+const BUILD_TIME = "2026-09-20 20:05 UTC";
 const BUILD_VERSION = "0.2.0";
-const BUILD_NUMBER = 7;
+const BUILD_NUMBER = 8;
 const SFX_PACK = "CATECHISM";
 
 const SVG = `<svg viewBox="0 0 341 66" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -19,12 +19,27 @@ export default {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>worldwidemultivision.com</title>
+  <script type="importmap">
+  { "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  } }
+  </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; }
     body { min-height: 100vh; background: #000; overflow: hidden; }
+    canvas#bg3d {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      z-index: 0; display: block;
+    }
+    .vignette {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: radial-gradient(ellipse at center,
+        rgba(0,0,0,0) 55%, rgba(0,0,0,0.45) 100%);
+    }
     .ui {
-      position: fixed; inset: 0;
+      position: fixed; inset: 0; z-index: 2;
       display: grid;
       grid-template-columns: repeat(10, 1fr);
       grid-template-rows: repeat(5, 1fr);
@@ -93,6 +108,8 @@ export default {
   </style>
 </head>
 <body>
+<canvas id="bg3d"></canvas>
+<div class="vignette"></div>
 <main class="ui">
   <div class="meta">
     <span>ВЕРСИЯ ${BUILD_VERSION}</span>
@@ -223,6 +240,7 @@ export default {
   var AMBIENT_VOL = 0.35, BODY_VOL = 0.16;
   var raw = {}, buf = {};   // сырые байты / декодированные буферы
   var AC = null, gainAmbient = null, gainBody = null;
+  var master = null, analyser = null, freqData = null;
   var started = false;
 
   // предзагрузка байтов сразу (fetch не требует user-gesture)
@@ -237,7 +255,7 @@ export default {
     var src = AC.createBufferSource();
     src.buffer = buf[name]; src.loop = true;
     var g = AC.createGain(); g.gain.value = vol;
-    src.connect(g); g.connect(AC.destination);
+    src.connect(g); g.connect(master);
     src.start();
     if (name === 'ambient') gainAmbient = g;
     if (name === 'body') gainBody = g;
@@ -262,7 +280,7 @@ export default {
     var src = AC.createBufferSource();
     src.buffer = picks[Math.floor(Math.random() * picks.length)];
     var g = AC.createGain(); g.gain.value = 0.5;
-    src.connect(g); g.connect(AC.destination);
+    src.connect(g); g.connect(master);
     src.start();
   }
 
@@ -322,6 +340,12 @@ export default {
     if (!Ctor) return;
     AC = new Ctor();
     AC.resume();
+    master = AC.createGain(); master.gain.value = 1;
+    analyser = AC.createAnalyser(); analyser.fftSize = 256;
+    master.connect(analyser); analyser.connect(AC.destination);
+    freqData = new Uint8Array(analyser.frequencyBinCount);
+    // отдаём уровень громкости 3D-сцене (для «лампочки»)
+    window.__audioLevel = 0;
     decodeAll();
     var hint = document.getElementById('hint');
     if (hint) hint.classList.add('hide');
@@ -331,15 +355,153 @@ export default {
   window.addEventListener('pointerdown', unlock);
   window.addEventListener('keydown', unlock);
 
-  // громкость слоя движения в главном цикле (плавно вверх при движении)
+  // громкость слоя движения + экспорт уровня для блика
   var frame2 = function (now) {
     requestAnimationFrame(frame2);
     if (!AC || !gainBody || !started) return;
     var bt = moving ? BODY_VOL : 0;
     bodyVol += (bt - bodyVol) * 0.08;
     gainBody.gain.value = Math.max(0, Math.min(1, bodyVol));
+    if (analyser) {
+      analyser.getByteFrequencyData(freqData);
+      var sum = 0;
+      for (var i = 0; i < freqData.length; i++) sum += freqData[i];
+      window.__audioLevel = sum / freqData.length / 255;   // 0..1
+    }
   };
   requestAnimationFrame(frame2);
+})();
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+
+(function () {
+  const canvas = document.getElementById('bg3d');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000);
+
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.05, 120);
+  camera.position.set(0, 1.6, 0);
+
+  // тусклое ночное освещение — тёмная атмосфера, акценты на emissive-полосах
+  scene.add(new THREE.AmbientLight(0x223344, 0.55));
+  const key = new THREE.DirectionalLight(0x8899bb, 0.45);
+  key.position.set(3, 4, 2);
+  scene.add(key);
+  const down = new THREE.DirectionalLight(0x335577, 0.30);
+  down.position.set(0, 0, 8);      // слабый свет вдоль коридора вглубь
+  scene.add(down);
+  const rim = new THREE.DirectionalLight(0x113355, 0.35);
+  rim.position.set(-4, 2, -5);
+  scene.add(rim);
+
+  let model = null;
+  let depth = 8;      // длина коридора (вдоль Z)
+  let halfW = 3;      // половина ширины (X)
+  let eyeY = 0;       // уровень глаз (Y)
+
+  const loader = new GLTFLoader();
+  loader.setMeshoptDecoder(MeshoptDecoder);
+  loader.load('/models/sci_fi_hallway.glb', (gltf) => {
+    // двусторонние материалы — интерьер коридора виден изнутри
+    gltf.scene.traverse((o) => {
+      if (o.isMesh && o.material) {
+        const mats = Array.isArray(o.material) ? o.material : [o.material];
+        mats.forEach((m) => { m.side = THREE.DoubleSide; });
+      }
+    });
+    const g = new THREE.Group();
+    g.add(gltf.scene);
+    const b = new THREE.Box3().setFromObject(g);
+    const center = b.getCenter(new THREE.Vector3());
+    const size = b.getSize(new THREE.Vector3());
+    g.position.sub(center);          // центр модели -> origin
+    scene.add(g);
+    // оси: глубина = самая длинная горизонтальная ось, высота = Y
+    const horiz = { x: size.x, z: size.z };
+    depth = Math.max(horiz.x, horiz.z);
+    halfW = Math.min(horiz.x, horiz.z) / 2;
+    eyeY = -0.4;                     // ниже центра высоты — уровень взгляда человека
+    model = g;
+    console.log('hallway loaded', JSON.stringify(size), 'depth', depth, 'halfW', halfW);
+  }, undefined, (err) => { console.error('GLB load error', err); });
+
+  // ввод: мышь + гироскоп -> целевые углы параллакса
+  const target = { mx: 0, my: 0, gx: 0, gy: 0 };
+  const cur = { mx: 0, my: 0, gx: 0, gy: 0 };
+
+  window.addEventListener('mousemove', (e) => {
+    target.mx = (e.clientX / window.innerWidth) * 2 - 1;
+    target.my = (e.clientY / window.innerHeight) * 2 - 1;
+  });
+
+  let baseG = null, baseB = null;
+  function onOrient(e) {
+    if (e.gamma == null || e.beta == null) return;
+    if (baseG == null) { baseG = e.gamma; baseB = e.beta; }
+    target.gx = Math.max(-1, Math.min(1, (e.gamma - baseG) / 30));
+    target.gy = Math.max(-1, Math.min(1, (e.beta - baseB) / 30));
+  }
+  window.addEventListener('deviceorientation', onOrient);
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    // разрешение запросит существующий UI-обработчик при первом клике; здесь просто слушаем
+  }
+
+  const clock = new THREE.Clock();
+
+  function frame() {
+    requestAnimationFrame(frame);
+    const dt = clock.getDelta();
+    const tt = clock.elapsedTime;
+
+    // сглаживание ввода
+    const k = Math.min(1, dt * 4);
+    cur.mx += (target.mx - cur.mx) * k;
+    cur.my += (target.my - cur.my) * k;
+    cur.gx += (target.gx - cur.gx) * k;
+    cur.gy += (target.gy - cur.gy) * k;
+
+    if (model) {
+      // очень медленное возвратно-поступательное дрейфование в дальней части коридора.
+      // Камера НЕ доходит впритык к двери (зазор depth*0.2) и не проходит насквозь.
+      const doorZ = depth / 2;              // дверь в конце (−Z после разворота)
+      const gap = depth * 0.20;             // зазор до двери
+      const centerZ = doorZ - depth * 0.55; // середина траектории, ближе к дальней части
+      const amp = depth * 0.18;             // амплитуда медленного дрейфа
+      const z = centerZ + Math.sin(tt * 0.06) * amp;
+      // параллакс от мыши/гироскопа (динамика снижена ~15%)
+      const px = cur.mx * halfW * 0.51 + cur.gx * halfW * 0.43;
+      const py = cur.my * 0.43 + cur.gy * 0.34;
+      camera.position.set(px, eyeY + py, z);
+      // смотрим в сторону двери (−Z)
+      const lookX = px + cur.mx * halfW * 0.68 + cur.gx * halfW * 0.51;
+      const lookY = eyeY + py + cur.my * 0.60 + cur.gy * 0.43;
+      camera.lookAt(lookX, lookY, z - 1);
+      camera.rotation.z += cur.mx * 0.017;
+    } else {
+      // до загрузки — лёгкое параллакс-покачивание пустой сцены
+      camera.position.set(cur.mx * 0.3, 1.6 + cur.my * 0.2, 0);
+      camera.lookAt(0, 1.6, -1);
+    }
+    renderer.render(scene, camera);
+  }
+  frame();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
 })();
 </script>
 </body>
