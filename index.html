@@ -98,7 +98,7 @@
 <main class="ui">
   <div class="meta">
     <span>ВЕРСИЯ 0.2.0</span>
-    <span>БИЛД № 8</span>
+    <span>БИЛД № 9</span>
     <span>UI / UX SFX: CATECHISM</span>
   </div>
   <div class="scene"><div class="logo" id="logo"><svg viewBox="0 0 341 66" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -467,17 +467,17 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
       const doorZ = depth / 2;              // дверь в конце (−Z после разворота)
       const gap = depth * 0.20;             // зазор до двери
       const centerZ = doorZ - depth * 0.55; // середина траектории, ближе к дальней части
-      const amp = depth * 0.18;             // амплитуда медленного дрейфа
+      const amp = depth * 0.06;             // маленькая амплитуда дрейфа — фокус на двери
       const z = centerZ + Math.sin(tt * 0.06) * amp;
-      // параллакс от мыши/гироскопа (динамика снижена ~15%)
-      const px = cur.mx * halfW * 0.51 + cur.gx * halfW * 0.43;
-      const py = cur.my * 0.43 + cur.gy * 0.34;
+      // параллакс от мыши/гироскопа (очень сдержанный — фокус держится на двери)
+      const px = cur.mx * halfW * 0.18 + cur.gx * halfW * 0.14;
+      const py = cur.my * 0.14 + cur.gy * 0.11;
       camera.position.set(px, eyeY + py, z);
-      // смотрим в сторону двери (−Z)
-      const lookX = px + cur.mx * halfW * 0.68 + cur.gx * halfW * 0.51;
-      const lookY = eyeY + py + cur.my * 0.60 + cur.gy * 0.43;
+      // смотрим на дверь (−Z), почти не сдвигая точку взгляда
+      const lookX = px + cur.mx * halfW * 0.22 + cur.gx * halfW * 0.16;
+      const lookY = eyeY + py + cur.my * 0.18 + cur.gy * 0.13;
       camera.lookAt(lookX, lookY, z - 1);
-      camera.rotation.z += cur.mx * 0.017;
+      camera.rotation.z += cur.mx * 0.008;
     } else {
       // до загрузки — лёгкое параллакс-покачивание пустой сцены
       camera.position.set(cur.mx * 0.3, 1.6 + cur.my * 0.2, 0);
